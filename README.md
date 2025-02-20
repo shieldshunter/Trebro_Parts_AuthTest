@@ -29,9 +29,3 @@ Check the actual port in the output of the previous command.)
 ## Loading data
 
 You can load data by drag and drop, or using a pick file dialog.
-
-## Live Demo
-
-![Live Demo](docs/images/Screenshot.png)
-
-[http://docs.zea.live/minimal-zea-viewer/](http://docs.zea.live/minimal-zea-viewer/)

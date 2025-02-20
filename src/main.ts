@@ -1,9 +1,6 @@
 import { LoginDialog } from './login-dialog'
 import './drop-zone'
 import './login-dialog'
-// import './logout-button'
-// import { LogoutButton } from './logout-button'
-import { auth } from './auth'
 
 function init() {
   const iframe = <HTMLIFrameElement>document.getElementById('catalog')

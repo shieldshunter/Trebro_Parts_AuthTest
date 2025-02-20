@@ -6,7 +6,7 @@ const HASHED_PASSWORD = '2d37e395cc590b4e127317494566f1aaf881f0ac1b5ff7d4180506f
 // To disable authentication, set `shouldAuthenticate` to false.
 const shouldAuthenticate = true
 
-async function sha256(message) {
+async function sha256(message: string) {
   // encode as UTF-8
   const msgBuffer = new TextEncoder().encode(message)
 
@@ -32,7 +32,7 @@ class Auth {
     return zeaUserData && JSON.parse(zeaUserData)
   }
 
-  async setUserData(userData) {
+  async setUserData(userData: Record<string, any>) {
     if (shouldAuthenticate) {
       if (!userData.password) {
         throw new Error('Password not provided.')

@@ -1,5 +1,5 @@
 //@ts-ignore
-import { auth, shouldAuthenticate } from './auth.mjs'
+import { auth, shouldAuthenticate } from './auth.js'
 
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement

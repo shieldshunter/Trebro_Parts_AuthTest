@@ -1,11 +1,5 @@
 //@ts-ignore
-import { auth, shouldAuthenticate, shouldProvideRoomID } from './auth.js'
-
-export const getRandomString = (charCount = 3) =>
-  Math.random()
-    .toString(36)
-    .replace(/[^a-z]+/g, '')
-    .substr(0, charCount)
+import { auth, shouldAuthenticate } from './auth.mjs'
 
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement
@@ -60,9 +54,7 @@ class LoginDialog extends HTMLElement {
     // When the user clicks on <span> (x), close the modal
     const loginBtn = <HTMLButtonElement>this.shadowRoot!.getElementById('login')
     loginBtn.onclick = async () => {
-      const userId = getRandomString()
       userData.firstName = uname.value
-      userData.id = userId
       userData.lastName = ''
       userData.password = shouldAuthenticate ? psw.value : ''
       userData.username = uname.value
@@ -194,15 +186,7 @@ span.psw {
   show(onCloseCallback: () => void) {
     this.onCloseCallback = onCloseCallback
 
-    // Under a few conditions we don't need to display the dialog.
-    // 1. A room id is required, and provided and cached authentication passes.
-    // 2. a room id is not required, and cached authentication passes.
-    const urlParams = new URLSearchParams(window.location.search)
-    if (shouldAuthenticate && !shouldProvideRoomID) {
-      auth.isAuthenticated().then((result: any) => {
-        if (result) this.close()
-      })
-    } else if (shouldProvideRoomID && urlParams.has('roomId')) {
+    if (shouldAuthenticate) {
       auth.isAuthenticated().then((result: any) => {
         if (result) this.close()
       })

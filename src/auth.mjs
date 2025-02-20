@@ -5,7 +5,6 @@ const HASHED_PASSWORD = '2d37e395cc590b4e127317494566f1aaf881f0ac1b5ff7d4180506f
 
 // To disable authentication, set `shouldAuthenticate` to false.
 const shouldAuthenticate = true
-const shouldProvideRoomID = true
 
 async function sha256(message) {
   // encode as UTF-8
@@ -60,4 +59,4 @@ class Auth {
 const auth = new Auth()
 
 export default auth
-export { auth, shouldAuthenticate, shouldProvideRoomID }
+export { auth, shouldAuthenticate }

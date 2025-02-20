@@ -1,22 +1,11 @@
 //@ts-ignore
 import { auth, shouldAuthenticate, shouldProvideRoomID } from './auth.js'
-import { Color } from '@zeainc/zea-engine'
 
 export const getRandomString = (charCount = 3) =>
   Math.random()
     .toString(36)
     .replace(/[^a-z]+/g, '')
     .substr(0, charCount)
-
-const getRandomRoomId = () => {
-  return `${getRandomString(3)}-${getRandomString(3)}-${getRandomString(3)}`
-}
-
-const setURLParam = (key: string, value: string) => {
-  var url = new URL(window.location.href)
-  url.searchParams.set(key, value)
-  window.history.pushState({}, '', url.href)
-}
 
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement
@@ -35,9 +24,6 @@ class LoginDialog extends HTMLElement {
     this.modal.appendChild(this.content)
 
     this.content.innerHTML = `
-        <div class="imgcontainer">
-          <img src="./data/logo-zea.svg" alt="Avatar" class="avatar">
-        </div>
 
         <div class="container">
           <label for="uname"><b>Username</b></label>
@@ -50,14 +36,6 @@ class LoginDialog extends HTMLElement {
               : ``
           }
 
-          ${
-            shouldProvideRoomID
-              ? `<label for="room"><b>Room ID</b></label>
-          <input id="room" type="text" placeholder="Enter Room ID" name="room" required>`
-              : ``
-          }
-
-
           <button type="submit" id="login">Login</button>
         </div>`
 
@@ -68,14 +46,6 @@ class LoginDialog extends HTMLElement {
       psw.addEventListener('input', () => {
         psw.style.border = ''
       })
-    }
-
-    let room: HTMLInputElement
-    if (shouldProvideRoomID) {
-      room = <HTMLInputElement>this.shadowRoot!.getElementById('room')
-      const urlParams = new URLSearchParams(window.location.search)
-      const roomId = urlParams.get('roomId') || getRandomRoomId()
-      room.value = roomId
     }
 
     let userData: any
@@ -91,14 +61,11 @@ class LoginDialog extends HTMLElement {
     const loginBtn = <HTMLButtonElement>this.shadowRoot!.getElementById('login')
     loginBtn.onclick = async () => {
       const userId = getRandomString()
-      userData.color = Color.random().toHex()
       userData.firstName = uname.value
       userData.id = userId
       userData.lastName = ''
       userData.password = shouldAuthenticate ? psw.value : ''
       userData.username = uname.value
-
-      if (shouldProvideRoomID && room.value) setURLParam('roomId', room.value)
 
       try {
         await auth.setUserData(userData)

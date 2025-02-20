@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html class="h-full">
+  <head>
+    <title>Zea CAD Viewer</title>
+    <link rel="shortcut icon" type="image/png" href="./data/favicon-32x32.png" />
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.9/tailwind.min.css" />
+    <link rel="stylesheet" href="./src/styles.css" />
+
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+  </head>
+
+  <body class="overflow-hidden h-full">
+    <div class="h-full flex flex-col">
+      <header class="p-2">
+        <img src="./data/logo-zea.png" id="logo" />
+      </header>
+      <main class="flex flex-col flex-1">
+        <div class="flex-1" id="topPanel">
+          <div class="splitter">
+            <div id="leftPanel" class="invisible" style="width: 0px; left: 0px">
+              <zea-tree-view id="tree" class="select-none"></zea-tree-view>
+            </div>
+            <div class="separator" id="separatorV" style="left: 0px"></div>
+            <div id="mainPanel" class="flex-1">
+              <div id="canvas-holder">
+                <canvas id="canvas"></canvas>
+              </div>
+              <div class="xr-button hidden" id="xr-button"></div>
+              <div class="fps-display" id="fps"></div>
+              <progress id="progress" max="100" value="100"></progress>
+            </div>
+          </div>
+        </div>
+        <!-- Uncomment these lines to provide a resizable bottom panel
+        <div class="separator" id="separatorH"></div>
+        <div id="bottomPanel">
+        </div> -->
+      </main>
+      <drop-zone id="dropZone" class="select-none"></drop-zone>
+      <login-dialog id="login" class="select-none"></login-dialog>
+    </div>
+    <script type="module">
+      import dragElement from './src/panels.ts'
+      const separatorV = document.getElementById('separatorV')
+      const leftPanel = document.getElementById('leftPanel')
+      const mainPanel = document.getElementById('mainPanel')
+      dragElement(separatorV, leftPanel, mainPanel, 'H')
+
+      const separatorH = document.getElementById('separatorH')
+      const topPanel = document.getElementById('topPanel')
+      const bottomPanel = document.getElementById('bottomPanel')
+      if (separatorH && topPanel && bottomPanel) {
+        dragElement(separatorH, topPanel, bottomPanel, 'V')
+      }
+
+      let leftPanelVisible = false
+      const toggleSidePanel = () => {
+        if (leftPanelVisible) {
+          leftPanel.classList.add('invisible')
+          leftPanel.style.width = '0px'
+          separatorV.style.left = '0px'
+          leftPanelVisible = false
+        } else {
+          leftPanel.classList.remove('invisible')
+          leftPanel.style.width = '300px'
+          separatorV.style.left = '300px'
+          leftPanelVisible = true
+        }
+      }
+
+      document.getElementById('logo').addEventListener('click', toggleSidePanel)
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (!isMobileDevice) toggleSidePanel()
+    </script>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

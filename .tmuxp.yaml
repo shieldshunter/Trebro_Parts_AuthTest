@@ -1,0 +1,11 @@
+session_name: minimal-zea-viewer
+suppress_history: false
+windows:
+  - panes:
+      - npm run start
+  - panes:
+      - ${EDITOR} -S
+  - panes:
+      - shell_command:
+          - git fetch
+          - git status

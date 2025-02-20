@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html class="h-full">
+  <head>
+    <title>Zea CAD Viewer</title>
+    <link rel="shortcut icon" type="image/png" href="./data/favicon-32x32.png" />
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.9/tailwind.min.css" />
+    
+
+    <script src="https://www.gstatic.com/draco/v1/decoders/draco_decoder_gltf.js"></script>
+    <script type="module" crossorigin src="./assets/index.98fcdaaf.js"></script>
+    <link rel="stylesheet" href="./assets/index.77904d89.css">
+  </head>
+
+  <body class="overflow-hidden h-full">
+    <div class="h-full flex flex-col">
+      <header class="p-2">
+        <img src="./data/logo-zea.png" id="logo" />
+      </header>
+      <main class="flex flex-col flex-1">
+        <div class="flex-1" id="topPanel">
+          <div class="splitter">
+            <div id="leftPanel" class="invisible" style="width: 0px; left: 0px">
+              <zea-tree-view id="tree" class="select-none"></zea-tree-view>
+            </div>
+            <div class="separator" id="separatorV" style="left: 0px"></div>
+            <div id="mainPanel" class="flex-1">
+              <div id="canvas-holder">
+                <canvas id="canvas"></canvas>
+              </div>
+              <div class="xr-button hidden" id="xr-button"></div>
+              <div class="fps-display" id="fps"></div>
+              <progress id="progress" max="100" value="100"></progress>
+            </div>
+          </div>
+        </div>
+        <!-- Uncomment these lines to provide a resizable bottom panel
+        <div class="separator" id="separatorH"></div>
+        <div id="bottomPanel">
+        </div> -->
+      </main>
+      <drop-zone id="dropZone" class="select-none"></drop-zone>
+      <login-dialog id="login" class="select-none"></login-dialog>
+    </div>
+    
+    
+  </body>
+</html>

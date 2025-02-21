@@ -20,7 +20,7 @@ class LoginDialog extends HTMLElement {
     this.content.innerHTML = `
   <div class="container">
     <div class="imgcontainer">
-      <img src="../public/data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
+      <img src="/public/data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
     </div>
     <label for="uname"><b>Username</b></label>
     <input id="uname" type="text" placeholder="Enter Username" name="uname" required>
@@ -123,7 +123,7 @@ class LoginDialog extends HTMLElement {
 
     /* Set a style for all buttons */
     button {
-      background-color:rgb(238, 141, 5);
+      background-color: #f36f21;
       color: black;
       padding: 14px 20px;
       margin: 8px 0;

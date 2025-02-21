@@ -1,5 +1,5 @@
 body {
-  height: 100vh;
+  height: auto;
   overflow: hidden;
   margin: 0em;
   background-color: #fca211;
@@ -45,6 +45,9 @@ main {
   background-color: #b63643;
 }
 
+.logo {
+  src: "../public/data/TrebroLogo2025Resized.png";
+}
 
 .hidden {
   visibility: hidden;

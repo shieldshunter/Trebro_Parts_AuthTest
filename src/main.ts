@@ -1,16 +1,28 @@
 import { LoginDialog } from './login-dialog'
 import './drop-zone'
 import './login-dialog'
+import auth from './auth'
 
-function init() {
+async function init() {
   const iframe = <HTMLIFrameElement>document.getElementById('catalog')
-  iframe.src = 'https://app.zea.live/parts/9Zux5BOyy4ccTlCeoMxk'
-
   const logoutButton = <HTMLButtonElement>document.getElementById('logoutButton')
-  logoutButton.style.display = 'block'
-  logoutButton.addEventListener('click', () => {
-    localStorage.removeItem('zeaUserData')
+
+  if (await auth.isAuthenticated()) {
+    iframe.src = 'https://app.zea.live/parts/9Zux5BOyy4ccTlCeoMxk'
+    logoutButton.style.display = 'block'
+  } else {
     iframe.src = ''
+    logoutButton.style.display = 'none'
+    login.show(() => {
+      // When it is closed, init the scene.
+      init()
+    })
+  }
+
+  logoutButton.addEventListener('click', async () => {
+    await auth.signOut()
+    iframe.src = ''
+    logoutButton.style.display = 'none'
     login.show(() => {
       // When it is closed, init the scene.
       init()

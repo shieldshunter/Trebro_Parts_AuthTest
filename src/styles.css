@@ -2,7 +2,8 @@ body {
   height: 100vh;
   overflow: hidden;
   margin: 0em;
-  background-color: #4d4d4d;
+  background-color: #fca211;
+  background-image: url(../public/data/IMG_0276REAL.jpg);
 }
 
 header {
@@ -28,16 +29,22 @@ main {
 
 #logoutButton {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding-left: 4px;
-  padding-right: 4px;
-  padding: 2px;
-  background-color: gray;
+  top: 12px;
+  right: 12px;
+  padding-left: 7px;
+  padding-right: 7px;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: grey;
   color: white;
   border: black;
   display: none;
 }
+
+#logoutButton:hover {
+  background-color: #b63643;
+}
+
 
 .hidden {
   visibility: hidden;
@@ -48,7 +55,7 @@ main {
   bottom: 10px;
 
   font-family: 'arial';
-  background-color: #f9ce03; /* Green */
+  background-color: #f99b03; /* Green */
   border: none;
   color: black;
   padding: 15px 32px;

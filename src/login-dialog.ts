@@ -20,7 +20,7 @@ class LoginDialog extends HTMLElement {
     this.content.innerHTML = `
   <div class="container">
     <div class="imgcontainer">
-      <img src="/public/data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
+      <img src="/data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
     </div>
     <label for="uname"><b>Username</b></label>
     <input id="uname" type="text" placeholder="Enter Username" name="uname" required>

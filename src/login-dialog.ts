@@ -86,19 +86,16 @@ class LoginDialog extends HTMLElement {
       }
     })
 
-    /*
-     * Request Access Button - link to MS Form
-     */
+
+    // Request Access Button - link to MS Form
     requestAccessBtn.addEventListener('click', () => {
-      // Replace with your actual Microsoft Form link or any other request URL
-      window.open('https://forms.office.com/your-form-link', '_blank')
+      window.open('https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u', '_blank')
     })
 
-    /*
-     * Login Button Click
-     */
+
+    // Login Button Click
+
     loginBtn.onclick = async () => {
-      // Make sure we have the updated email from the input
       userData.firstName = uname.value
       userData.lastName = ''
       userData.email = uname.value
@@ -126,12 +123,16 @@ class LoginDialog extends HTMLElement {
       this.close()
     }
 
-    /****************************************
+    /*
      * Inject stylesheet
-     ****************************************/
+     */
+
+    //I was trying to add the animation to the login slideout but it didn't work
+    //Will try to fix it later
     const styleTag = document.createElement('style')
     styleTag.appendChild(
       document.createTextNode(`
+
         @keyframes slideDown {
           0% {
             opacity: 0;
@@ -283,7 +284,7 @@ class LoginDialog extends HTMLElement {
     shadowRoot.appendChild(styleTag)
   } // end constructor
 
-  /**
+  /*
    * Shows the modal. If user is already authenticated, it closes immediately.
    */
   show(onCloseCallback: () => void) {

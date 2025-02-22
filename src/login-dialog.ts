@@ -1,6 +1,5 @@
 //@ts-ignore
-import { auth, shouldAuthenticate, validEmails } from './auth.js'
-
+import { auth, shouldAuthenticate, getLatestAuthData} from './auth.js'
 
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement
@@ -34,8 +33,8 @@ class LoginDialog extends HTMLElement {
           <input id="psw" type="password" placeholder="Enter Password" name="psw" required>
         </div>
 
-        <!-- Login button. We might hide it too if no valid email -->
-        <button type="submit" id="login">Login</button>
+        <!-- Login button. Initially hidden until valid email is entered -->
+        <button type="submit" id="login" style="display: none;">Login</button>
 
         <!-- Request Access button initially hidden -->
         <button type="button" id="requestAccess" style="display: none; background-color: #aaa; color: white;">
@@ -43,13 +42,13 @@ class LoginDialog extends HTMLElement {
         </button>
       </div>
     `
+
     const uname = this.shadowRoot!.getElementById('uname') as HTMLInputElement
     const passwordContainer = this.shadowRoot!.getElementById('passwordContainer') as HTMLDivElement
     const loginBtn = this.shadowRoot!.getElementById('login') as HTMLButtonElement
     const requestAccessBtn = this.shadowRoot!.getElementById('requestAccess') as HTMLButtonElement
-
-    // Conditionally reference the password field if authentication is enabled
     let psw: HTMLInputElement | null = null
+
     if (shouldAuthenticate) {
       psw = this.shadowRoot!.getElementById('psw') as HTMLInputElement
       psw.addEventListener('input', () => {
@@ -57,10 +56,7 @@ class LoginDialog extends HTMLElement {
       })
     }
 
-    // If there's user data in localStorage from a previous session, load it
-    let userData: any
     auth.getUserData().then((result: any) => {
-      userData = result ? result : {}
       if (result && psw) {
         psw.value = result.password
         uname.value = result.firstName
@@ -70,69 +66,62 @@ class LoginDialog extends HTMLElement {
     /*
      * Show/Hide Password + Buttons On Email Input
      */
-    uname.addEventListener('input', () => {
-      const typedEmail = uname.value.trim().toLowerCase()
+    uname.addEventListener('input', async () => {
+      const typedEmail = uname.value.trim().toLowerCase();
 
-      if (validEmails.some((email: string) => email.toLowerCase() === typedEmail)) {
-        // Email is whitelisted => show password container & login button
-        passwordContainer.style.display = 'block'
-        loginBtn.style.display = 'block'
-        requestAccessBtn.style.display = 'none'
+      // Fetch the latest credentials
+      const emailPasswordMap = await getLatestAuthData();
+
+      if (emailPasswordMap[typedEmail]) {  // Use direct lookup instead of hasOwnProperty
+        // Valid email: Show password container & login button
+        passwordContainer.style.display = 'block';
+        loginBtn.style.display = 'block';
+        requestAccessBtn.style.display = 'none';
       } else {
-        // Email not whitelisted => hide password & login button, show “Request Access”
-        passwordContainer.style.display = 'none'
-        loginBtn.style.display = 'none'
-        requestAccessBtn.style.display = 'block'
+        // Invalid email: Hide password & login button, show “Request Access”
+        passwordContainer.style.display = 'none';
+        loginBtn.style.display = 'none';
+        requestAccessBtn.style.display = 'block';
       }
-    })
+    });
 
 
-    // Request Access Button - link to MS Form
+    /*
+     * Request Access Button - link to MS Form
+     */
     requestAccessBtn.addEventListener('click', () => {
       window.open('https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u', '_blank')
     })
 
-
-    // Login Button Click
-
+    /*
+     * Login Button Click - Validate Before Login
+     */
     loginBtn.onclick = async () => {
-      userData.firstName = uname.value
-      userData.lastName = ''
-      userData.email = uname.value
-      userData.username = uname.value
-
-      // If “shouldAuthenticate” is true, gather the password from the input
-      if (psw && shouldAuthenticate) {
-        userData.password = psw.value
-      } else {
-        userData.password = ''
-      }
+      const email = uname.value.trim().toLowerCase()
+      const password = psw?.value.trim()
 
       try {
-        // Attempt to authenticate & store user data
-        await auth.setUserData(userData)
-      } catch (e) {
-        // Authentication failed => highlight password field
-        console.warn('Authentication failed:', e)
-        if (psw) {
-          psw.style.border = '2px solid #f00'
+        await auth.setUserData({ email, password })
+        this.close() // Close dialog on successful login
+      } catch (error) {
+        console.warn('Authentication failed:', error)
+        if (error instanceof Error) {
+          alert(error.message)
+        } else {
+          alert('An unknown error occurred')
         }
-        return
+        if (psw) {
+          psw.style.border = '2px solid red'
+        }
       }
-      // Close dialog on success
-      this.close()
     }
 
     /*
      * Inject stylesheet
      */
-
-    //I was trying to add the animation to the login slideout but it didn't work
-    //Will try to fix it later
     const styleTag = document.createElement('style')
     styleTag.appendChild(
       document.createTextNode(`
-
         @keyframes slideDown {
           0% {
             opacity: 0;
@@ -282,7 +271,7 @@ class LoginDialog extends HTMLElement {
       `)
     )
     shadowRoot.appendChild(styleTag)
-  } // end constructor
+  }
 
   /*
    * Shows the modal. If user is already authenticated, it closes immediately.
@@ -293,15 +282,12 @@ class LoginDialog extends HTMLElement {
     if (shouldAuthenticate) {
       auth.isAuthenticated().then((result: any) => {
         if (result) {
-          // Already authenticated => skip showing
           this.close()
         } else {
-          // Show the dialog
           this.modal.style.display = 'block'
         }
       })
     } else {
-      // If not authenticating, just show the dialog right away
       this.modal.style.display = 'block'
     }
   }

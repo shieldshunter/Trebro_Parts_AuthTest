@@ -2,17 +2,18 @@ import { fetchAuthData } from './fetchAuthData';
 
 let emailPasswordMap: Record<string, string> = {};
 
-// Fetch credentials when script initializes
+// Fetch credentials once and cache them in memory
 (async () => {
   emailPasswordMap = await fetchAuthData();
 })();
 
-// Function to fetch and return the latest authentication data
-async function getLatestAuthData(): Promise<Record<string, string>> {
-  emailPasswordMap = await fetchAuthData(); // Now returns a correct key-value map
+// Function to get the cached authentication data
+async function getCachedAuthData(): Promise<Record<string, string>> {
+  if (Object.keys(emailPasswordMap).length === 0) {
+    emailPasswordMap = await fetchAuthData(); // Fetch only if cache is empty
+  }
   return emailPasswordMap;
 }
-
 
 const shouldAuthenticate = true;
 
@@ -44,20 +45,15 @@ class Auth {
     if (shouldAuthenticate) {
       const emailLower = userData.email.toLowerCase();
 
-      if (!emailPasswordMap.hasOwnProperty(emailLower)) {
+      if (!emailPasswordMap[emailLower]) {
         throw new Error('Email not registered. Please request access.');
       }
       if (!userData.password) {
         throw new Error('Password not provided.');
       }
 
-      console.log('Original userData:', userData);
-
       // Hash the entered password
       const computedHash = await sha256(userData.password);
-
-      console.log('Computed hash:', computedHash);
-      console.log('Stored hash:', emailPasswordMap[emailLower]);
 
       if (emailPasswordMap[emailLower] !== computedHash) {
         throw new Error('Wrong password.');
@@ -67,13 +63,10 @@ class Auth {
       userData.password = ''.padEnd(6, '*'); // Hide actual password
     }
 
-    console.log('Setting userData:', userData);
     window.localStorage.zeaUserData = JSON.stringify(userData);
   }
 
-
   async signOut() {
-    console.log('Signing out');
     localStorage.removeItem('zeaUserData');
   }
 }
@@ -81,4 +74,4 @@ class Auth {
 const auth = new Auth();
 
 export default auth;
-export { auth, shouldAuthenticate, getLatestAuthData};
+export { auth, shouldAuthenticate, getCachedAuthData };

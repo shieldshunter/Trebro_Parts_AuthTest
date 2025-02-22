@@ -1,5 +1,5 @@
 //@ts-ignore
-import { auth, shouldAuthenticate, getLatestAuthData} from './auth.js'
+import { auth, shouldAuthenticate, getCachedAuthData} from './auth.js'
 
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement
@@ -70,7 +70,7 @@ class LoginDialog extends HTMLElement {
       const typedEmail = uname.value.trim().toLowerCase();
 
       // Fetch the latest credentials
-      const emailPasswordMap = await getLatestAuthData();
+      const emailPasswordMap = await getCachedAuthData();
 
       if (typedEmail === '') {
       // No input: Hide password & login button, show “Request Access”
@@ -167,7 +167,7 @@ class LoginDialog extends HTMLElement {
 
         /* Modal Content/Box */
         .modal-content {
-          background-color: #eeeeee;
+          background-color:rgb(255, 255, 255);
           margin: 15% auto; /* 15% from the top and centered */
           padding: 20px;
           border-radius: 10px;

@@ -72,18 +72,26 @@ class LoginDialog extends HTMLElement {
       // Fetch the latest credentials
       const emailPasswordMap = await getLatestAuthData();
 
-      if (emailPasswordMap[typedEmail]) {  // Use direct lookup instead of hasOwnProperty
-        // Valid email: Show password container & login button
-        passwordContainer.style.display = 'block';
-        loginBtn.style.display = 'block';
-        requestAccessBtn.style.display = 'none';
+      if (typedEmail === '') {
+      // No input: Hide password & login button, show “Request Access”
+      passwordContainer.style.display = 'none';
+      loginBtn.style.display = 'none';
+      requestAccessBtn.style.display = 'block';
+      } else if (emailPasswordMap[typedEmail]) {  // Use direct lookup instead of hasOwnProperty
+      // Valid email: Show password container & login button
+      passwordContainer.style.display = 'block';
+      loginBtn.style.display = 'block';
+      requestAccessBtn.style.display = 'none';
       } else {
-        // Invalid email: Hide password & login button, show “Request Access”
-        passwordContainer.style.display = 'none';
-        loginBtn.style.display = 'none';
-        requestAccessBtn.style.display = 'block';
+      // Invalid email: Hide password & login button, show “Request Access”
+      passwordContainer.style.display = 'none';
+      loginBtn.style.display = 'none';
+      requestAccessBtn.style.display = 'block';
       }
     });
+
+    // Show request access button by default
+    requestAccessBtn.style.display = 'block';
 
 
     /*

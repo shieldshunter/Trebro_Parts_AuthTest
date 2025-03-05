@@ -43,25 +43,29 @@ class LoginDialog extends HTMLElement {
         <!-- Microsoft Form container (initially hidden) -->
         <div id="msFormContainer" style="display: none; margin-top: 1rem;">
           <p>If you don’t have an account, please fill out the form below:</p>
-          <iframe
-            src="https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u"
-            width="100%"
-            height="900"
-            frameborder="0"
-            marginheight="0"
-            marginwidth="0"
-          >
-            Loading…
-          </iframe>
+            <iframe id="msForm"
+              width="640px"
+              height="480px"
+              frameborder="0"
+              marginwidth="0"
+              marginheight="0"
+              style="border: none; max-width: 100%; max-height: 100vh;"
+              allowfullscreen
+              webkitallowfullscreen
+              mozallowfullscreen
+              msallowfullscreen
+            >
+            </iframe>
         </div>
-      </div>
     `;
 
     const uname = this.shadowRoot!.getElementById('uname') as HTMLInputElement
     const passwordContainer = this.shadowRoot!.getElementById('passwordContainer') as HTMLDivElement
     const loginBtn = this.shadowRoot!.getElementById('login') as HTMLButtonElement
     const msFormContainer = this.shadowRoot!.getElementById('msFormContainer') as HTMLDivElement
+    const msForm = this.shadowRoot!.getElementById('msForm') as HTMLIFrameElement
     let psw: HTMLInputElement | null = null
+
 
     if (shouldAuthenticate) {
       psw = this.shadowRoot!.getElementById('psw') as HTMLInputElement
@@ -100,6 +104,8 @@ class LoginDialog extends HTMLElement {
           loginBtn.style.display = 'block';
         } else {
           // Valid email format but not in auth data: show “Request Access” + form
+          msForm.src = "https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u&embed=true";
+
           msFormContainer.style.display = 'block';
         }
       }
@@ -135,7 +141,6 @@ class LoginDialog extends HTMLElement {
         }
       }
     }
-
     /*
      * Inject stylesheet
      */

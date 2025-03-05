@@ -1,6 +1,10 @@
 //@ts-ignore
 import { auth, shouldAuthenticate, getCachedAuthData} from './auth.js'
 
+function isValidEmail(email: string): boolean {
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return EMAIL_REGEX.test(email);
+}
 class LoginDialog extends HTMLElement {
   modal: HTMLDivElement
   content: HTMLDivElement
@@ -24,29 +28,39 @@ class LoginDialog extends HTMLElement {
         <div class="imgcontainer">
           <img src="data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
         </div>
-        <label for="uname"><b>Username</b></label>
-        <input id="uname" type="text" placeholder="Enter Username" name="uname" required>
+        <label for="uname"><b>Username (Email)</b></label>
+        <input id="uname" type="text" placeholder="Enter Email" name="uname" required>
 
-        <!-- Container for Password Label+Input so we can hide/show together -->
+        <!-- Password Container (initially hidden) -->
         <div id="passwordContainer" style="display: none;">
           <label for="psw" id="pswLabel"><b>Password</b></label>
           <input id="psw" type="password" placeholder="Enter Password" name="psw" required>
         </div>
 
-        <!-- Login button. Initially hidden until valid email is entered -->
+        <!-- Login button (initially hidden) -->
         <button type="submit" id="login" style="display: none;">Login</button>
 
-        <!-- Request Access button initially hidden -->
-        <button type="button" id="requestAccess" style="display: none; background-color: #aaa; color: white;">
-          Request Access
-        </button>
+        <!-- Microsoft Form container (initially hidden) -->
+        <div id="msFormContainer" style="display: none; margin-top: 1rem;">
+          <p>If you don’t have an account, please fill out the form below:</p>
+          <iframe
+            src="https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u"
+            width="100%"
+            height="900"
+            frameborder="0"
+            marginheight="0"
+            marginwidth="0"
+          >
+            Loading…
+          </iframe>
+        </div>
       </div>
-    `
+    `;
 
     const uname = this.shadowRoot!.getElementById('uname') as HTMLInputElement
     const passwordContainer = this.shadowRoot!.getElementById('passwordContainer') as HTMLDivElement
     const loginBtn = this.shadowRoot!.getElementById('login') as HTMLButtonElement
-    const requestAccessBtn = this.shadowRoot!.getElementById('requestAccess') as HTMLButtonElement
+    const msFormContainer = this.shadowRoot!.getElementById('msFormContainer') as HTMLDivElement
     let psw: HTMLInputElement | null = null
 
     if (shouldAuthenticate) {
@@ -69,37 +83,35 @@ class LoginDialog extends HTMLElement {
     uname.addEventListener('input', async () => {
       const typedEmail = uname.value.trim().toLowerCase();
 
-      // Fetch the latest credentials
-      const emailPasswordMap = await getCachedAuthData();
+      // Always hide everything first
+      passwordContainer.style.display = 'none';
+      loginBtn.style.display = 'none';
+      msFormContainer.style.display = 'none';
 
-      if (typedEmail === '') {
-      // No input: Hide password & login button, show “Request Access”
-      passwordContainer.style.display = 'none';
-      loginBtn.style.display = 'none';
-      requestAccessBtn.style.display = 'block';
-      } else if (emailPasswordMap[typedEmail]) {  // Use direct lookup instead of hasOwnProperty
-      // Valid email: Show password container & login button
-      passwordContainer.style.display = 'block';
-      loginBtn.style.display = 'block';
-      requestAccessBtn.style.display = 'none';
-      } else {
-      // Invalid email: Hide password & login button, show “Request Access”
-      passwordContainer.style.display = 'none';
-      loginBtn.style.display = 'none';
-      requestAccessBtn.style.display = 'block';
+      // If typed text *looks* like an email, check if it’s known
+      if (isValidEmail(typedEmail)) {
+        // Fetch the latest credentials
+        const emailPasswordMap = await getCachedAuthData();
+        const partialMatchExists = Object.keys(emailPasswordMap).some(authEmail => authEmail.startsWith(typedEmail));
+
+        if (partialMatchExists) {
+          // Known/authorized email: Show password container & login
+          passwordContainer.style.display = 'block';
+          loginBtn.style.display = 'block';
+        } else {
+          // Valid email format but not in auth data: show “Request Access” + form
+          msFormContainer.style.display = 'block';
+        }
       }
     });
 
-    // Show request access button by default
-    requestAccessBtn.style.display = 'block';
+    // By default, show requestAccess if you want
+
 
 
     /*
      * Request Access Button - link to MS Form
      */
-    requestAccessBtn.addEventListener('click', () => {
-      window.open('https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u', '_blank')
-    })
 
     /*
      * Login Button Click - Validate Before Login

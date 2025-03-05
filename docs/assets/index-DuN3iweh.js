@@ -46,7 +46,7 @@ var E=Object.defineProperty;var v=(s,e,t)=>e in s?E(s,e,{enumerable:!0,configura
         <div class="imgcontainer">
           <img src="data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
         </div>
-        <label for="uname"><b>Username (Email)</b></label>
+        <label for="uname"><b>Email</b></label>
         <input id="uname" type="text" placeholder="Enter Email" name="uname" required>
 
         <!-- Password Container (initially hidden) -->

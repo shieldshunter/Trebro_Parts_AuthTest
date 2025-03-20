@@ -1,9 +1,9 @@
-# minimal-zea-viewer
+# minimal-authentication-page
 
 This is a minimal sample application built using Vite, TypeScript, HTML, and
-WebComponents. It is a simple sample that shows how to load
-and render various file formats, while providing a simple tree view to explore
-the model structure.
+WebComponents. It is a simple authentication page which uses email whitelisting to
+dynamically display form components. Uses Password Hashing as well as Azure Blobs
+for storage. Authentication leads to an Iframe containing Parts Manual data.
 
 ## Running the demo
 

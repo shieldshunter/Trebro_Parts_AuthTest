@@ -1,6 +1,8 @@
 //@ts-ignore
-import { auth, shouldAuthenticate, getCachedAuthData} from './auth.js'
+import { auth, shouldAuthenticate } from './auth.js'
+import { fetchAuthData } from './fetchAuthData.js'; // Make sure path is correct
 
+let cachedWhitelist: Set<string> | null = null;
 function isValidEmail(email: string): boolean {
   const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return EMAIL_REGEX.test(email);
@@ -26,90 +28,70 @@ class LoginDialog extends HTMLElement {
     this.content.innerHTML = `
       <div class="container">
         <div class="imgcontainer">
-          <img src="data/TrebroLogo2025Resized.png" alt="Logo" class="logo">
+          <img src="data/TrebroLogo2025.png" alt="Logo" class="logo">
         </div>
         <label for="uname"><b>Email</b></label>
         <input id="uname" type="text" placeholder="Enter Email" name="uname" required>
 
-        <!-- Password Container (initially hidden) -->
-        <div id="passwordContainer" style="display: none;">
-          <label for="psw" id="pswLabel"><b>Password</b></label>
-          <input id="psw" type="password" placeholder="Enter Password" name="psw" required>
-        </div>
+        <!-- CHANGED: remove password container entirely -->
+        <button type="submit" id="sendLinkBtn" style="display: none;">Send Magic Link</button>
 
-        <!-- Login button (initially hidden) -->
-        <button type="submit" id="login" style="display: none;">Login</button>
-
-        <!-- Microsoft Form container (initially hidden) -->
+        <!-- Microsoft Form container (unchanged) -->
         <div id="msFormContainer" style="display: none; margin-top: 1rem;">
           <p>If you don’t have an account, please fill out the form below:</p>
-            <iframe id="msForm"
-              width="640px"
-              height="480px"
-              frameborder="0"
-              marginwidth="0"
-              marginheight="0"
-              style="border: none; max-width: 100%; max-height: 100vh;"
-              allowfullscreen
-              webkitallowfullscreen
-              mozallowfullscreen
-              msallowfullscreen
-            >
-            </iframe>
+          <iframe id="msForm"
+            width="640px"
+            height="480px"
+            frameborder="0"
+            marginwidth="0"
+            marginheight="0"
+            style="border: none; max-width: 100%; max-height: 100vh;"
+            allowfullscreen
+            webkitallowfullscreen
+            mozallowfullscreen
+            msallowfullscreen
+          ></iframe>
         </div>
+      </div>
     `;
 
-    const uname = this.shadowRoot!.getElementById('uname') as HTMLInputElement
-    const passwordContainer = this.shadowRoot!.getElementById('passwordContainer') as HTMLDivElement
-    const loginBtn = this.shadowRoot!.getElementById('login') as HTMLButtonElement
-    const msFormContainer = this.shadowRoot!.getElementById('msFormContainer') as HTMLDivElement
-    const msForm = this.shadowRoot!.getElementById('msForm') as HTMLIFrameElement
-    let psw: HTMLInputElement | null = null
-
-
-    if (shouldAuthenticate) {
-      psw = this.shadowRoot!.getElementById('psw') as HTMLInputElement
-      psw.addEventListener('input', () => {
-        psw!.style.border = ''
-      })
-    }
-
-    auth.getUserData().then((result: any) => {
-      if (result && psw) {
-        psw.value = result.password
-        uname.value = result.firstName
-      }
-    })
-
+    const uname = this.shadowRoot!.getElementById('uname') as HTMLInputElement;
+    const sendLinkBtn = this.shadowRoot!.getElementById('sendLinkBtn') as HTMLButtonElement;
+    const msFormContainer = this.shadowRoot!.getElementById('msFormContainer') as HTMLDivElement;
+    const msForm = this.shadowRoot!.getElementById('msForm') as HTMLIFrameElement;
     /*
      * Show/Hide Password + Buttons On Email Input
      */
     uname.addEventListener('input', async () => {
       const typedEmail = uname.value.trim().toLowerCase();
-
-      // Always hide everything first
-      passwordContainer.style.display = 'none';
-      loginBtn.style.display = 'none';
-      msFormContainer.style.display = 'none';
-
-      // If typed text *looks* like an email, check if it’s known
+    
+      // Only fetch once
+      if (!cachedWhitelist) {
+        cachedWhitelist = await fetchAuthData();
+      }
+    
       if (isValidEmail(typedEmail)) {
-        // Fetch the latest credentials
-        const emailPasswordMap = await getCachedAuthData();
-        const partialMatchExists = Object.keys(emailPasswordMap).some(authEmail => authEmail.startsWith(typedEmail));
-
+        // Convert the set to an array and check if any item starts with typedEmail
+        const partialMatchExists = Array.from(cachedWhitelist).some(
+          (whitelistedEmail) => whitelistedEmail.startsWith(typedEmail)
+        );
+    
         if (partialMatchExists) {
-          // Known/authorized email: Show password container & login
-          passwordContainer.style.display = 'block';
-          loginBtn.style.display = 'block';
+          sendLinkBtn.style.display = 'block';
+          msFormContainer.style.display = 'none';
         } else {
-          // Valid email format but not in auth data: show “Request Access” + form
+          sendLinkBtn.style.display = 'none';
           msForm.src = "https://forms.office.com/Pages/ResponsePage.aspx?id=J-soOqbWJUmXJZuWlVm4i-iWZheT5UVMtvugZuufuFtUQjI1TExGSjhGTFdRTlMxRlBXTFVPV1NLMy4u&embed=true";
-
           msFormContainer.style.display = 'block';
         }
+      } else {
+        // hide both if not a valid email pattern
+        sendLinkBtn.style.display = 'none';
+        msFormContainer.style.display = 'none';
       }
     });
+    
+
 
     // By default, show requestAccess if you want
 
@@ -122,25 +104,35 @@ class LoginDialog extends HTMLElement {
     /*
      * Login Button Click - Validate Before Login
      */
-    loginBtn.onclick = async () => {
-      const email = uname.value.trim().toLowerCase()
-      const password = psw?.value.trim()
-
+    sendLinkBtn.onclick = async () => {
+      const email = uname.value.trim().toLowerCase();
+    
+      // (Optional) store user’s email
+      await auth.setUserData({ email });
+    
+      // Change button text to a loading spinner + text
+      sendLinkBtn.disabled = true;
+      sendLinkBtn.innerHTML = `<span class="loader"></span> Sending...`;
+    
       try {
-        await auth.setUserData({ email, password })
-        this.close() // Close dialog on successful login
-      } catch (error) {
-        console.warn('Authentication failed:', error)
-        if (error instanceof Error) {
-          alert(error.message)
-        } else {
-          alert('An unknown error occurred')
+        const response = await fetch("https://trebrosinglesignon.azurewebsites.net/api/send_magic_link_function", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        if (!response.ok) {
+          console.log(`Failed to send magic link: ${response.statusText}`);
         }
-        if (psw) {
-          psw.style.border = '2px solid red'
-        }
+        alert("Magic link sent! Check your email.");
+        this.close(); // close dialog
+      } catch (err) {
+        console.log(`Error: ${err}`);
+      } finally {
+        // Restore button text and re-enable
+        sendLinkBtn.innerHTML = "Send Magic Link";
+        sendLinkBtn.disabled = false;
       }
-    }
+    };
     /*
      * Inject stylesheet
      */
@@ -230,6 +222,7 @@ class LoginDialog extends HTMLElement {
           display: inline-block;
           border: 1px solid #ccc;
           box-sizing: border-box;
+          border-radius: 12px;
         }
 
         /* Set a style for all buttons */
@@ -241,6 +234,7 @@ class LoginDialog extends HTMLElement {
           border: none;
           cursor: pointer;
           width: 100%;
+          border-radius: 12px;
         }
 
         /* Add a hover effect for buttons */
@@ -292,6 +286,21 @@ class LoginDialog extends HTMLElement {
         .logo {
           width: 200px; /* Adjust the width as needed */
           height: auto;
+        }
+        .loader {
+          display: inline-block;
+          width: 16px;
+          height: 16px;
+          border: 2px solid #f3f3f3; 
+          border-top: 2px solid #3498db;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin-right: 8px;
+          vertical-align: middle;
+        }
+        @keyframes spin {
+          0%   { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `)
     )

@@ -117,6 +117,7 @@ class LoginDialog extends HTMLElement {
     /*
      * Login Button Click - Validate Before Login
      */
+    /*
     sendLinkBtn.onclick = async () => {
       const email = uname.value.trim().toLowerCase();
     
@@ -146,6 +147,52 @@ class LoginDialog extends HTMLElement {
         sendLinkBtn.classList.remove("loading");
       }
     };
+    */
+   // Capture the button’s original HTML structure so we can reset it later.
+const initialBtnHTML = sendLinkBtn.innerHTML;
+
+    sendLinkBtn.onclick = async () => {
+      const email = uname.value.trim().toLowerCase();
+      
+      // Optionally, validate email here if needed
+      await auth.setUserData({ email });
+
+      // Enter loading state:
+      sendLinkBtn.disabled = true;
+      sendLinkBtn.classList.add("loading");
+
+      try {
+        await fetch("https://trebrosinglesignon.azurewebsites.net/api/send_magic_link_function", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email })
+        });
+        
+        // On successful response, show success state:
+        sendLinkBtn.classList.remove("loading");
+        sendLinkBtn.classList.add("success");
+        sendLinkBtn.textContent = "Success! Check your email";
+
+        // Optionally, you could alert the user or close the dialog here.
+
+        // Reset the button back to its idle state after a delay:
+        setTimeout(() => {
+          sendLinkBtn.disabled = false;
+          sendLinkBtn.classList.remove("success");
+          sendLinkBtn.innerHTML = initialBtnHTML;
+        }, 6000);
+        
+        // Optionally, close the dialog (if desired):
+        // this.close();
+      } catch (err) {
+        console.error(`Error: ${err}`);
+        // On error, revert to idle state:
+        sendLinkBtn.disabled = false;
+        sendLinkBtn.classList.remove("loading");
+        sendLinkBtn.innerHTML = initialBtnHTML;
+      }
+    };
+
     
     
     /*
@@ -416,6 +463,26 @@ class LoginDialog extends HTMLElement {
       100% {
       background-color: #ffffff;
       }
+      }
+
+      @keyframes successTransition {
+        0% {
+
+          background-color:rgb(255, 255, 255);
+        }
+        50% {
+          background-color: #ffffff;
+        }
+        100% {
+          background-color: #28a745;
+        }
+      }
+
+      /* Success State Styling */
+      .btn.success {
+        animation: successTransition 0.7s ease forwards;
+        background-color: #28a745;  /* Green */
+        color: #fff;
       }
       `)
     )

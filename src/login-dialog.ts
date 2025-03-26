@@ -75,6 +75,9 @@ class LoginDialog extends HTMLElement {
     /*
      * Show/Hide Password + Buttons On Email Input
      */
+    // Initially hide the send link button
+    sendLinkBtn.style.display = 'none'
+
     uname.addEventListener('input', async () => {
       const typedEmail = uname.value.trim().toLowerCase();
     
@@ -168,6 +171,8 @@ const initialBtnHTML = sendLinkBtn.innerHTML;
           body: JSON.stringify({ email })
         });
         
+        // DISABLED LOGIC for testing purposes, for some reason the fetch request is working but always still returns a 500 error
+        // Im thinbking it has to do with the cosmos db connection problem that I keep having
         // On successful response, show success state:
         sendLinkBtn.classList.remove("loading");
         sendLinkBtn.classList.add("success");

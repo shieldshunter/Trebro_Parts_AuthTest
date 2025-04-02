@@ -25,6 +25,7 @@
     "npx": "^3.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "trebro_parts_authtest": "file:",
     "yarn": "^1.22.22"
   }
 }

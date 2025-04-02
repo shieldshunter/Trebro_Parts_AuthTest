@@ -13,7 +13,7 @@ let whitelistedEmails: string[] = [];
   const emailSet = await fetchAuthData();
   // Option 1: keep it as a set
   whitelistedEmails = Array.from(emailSet); // if you want an array
-  // or if you want to keep it as a set, rename it to "whitelistedSet" 
+  // or if you want to keep it as a set, rename it to "whitelistedSet"
 })();
 
 const shouldAuthenticate = true;
@@ -22,6 +22,26 @@ const shouldAuthenticate = true;
  * Helper to read a cookie by name. Returns `null` if not found.
  */
 function getCookie(name: string): string | null {
+  // Only do our special logic if we're asking for "auth"
+  if (name === 'auth') {
+    // Check if the URL has ?auth=someValue
+    const urlParams = new URLSearchParams(window.location.search);
+    const authParam = urlParams.get('auth');
+    if (authParam) {
+      // (A) Set the cookie for 24 hours (86400 seconds)
+      // We cannot set HttpOnly from JS. Include SameSite=None; Secure if HTTPS/cross-domain is needed.
+      document.cookie = `auth=${encodeURIComponent(authParam)}; Path=/; Max-Age=864000; SameSite=None; Secure;`;
+
+      // (B) Remove the ?auth= from the URL so it doesn't linger
+      urlParams.delete('auth');
+      const newQuery = urlParams.toString();
+      const newUrl =
+        window.location.pathname + (newQuery ? `?${newQuery}` : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }
+
+  // Now read the cookie by name and return it
   const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
   return match ? decodeURIComponent(match[2]) : null;
 }

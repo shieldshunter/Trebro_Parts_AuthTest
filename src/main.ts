@@ -12,7 +12,7 @@ function setAuthFromQueryParam() {
   if (authParam) {
     // Set a cookie named "auth" valid for the entire domain.
     // Adjust Max-Age and other attributes as needed.
-    document.cookie = `auth=${authParam}; Path=/; Max-Age=${360000}; Secure; SameSite=None`;
+    document.cookie = `auth=${authParam}; Path=/; Expires=Fri, 31 Dec 2099 23:59:59 GMT; Secure; SameSite=None`;
 
     // Optionally, remove the "auth" query parameter from the URL:
     window.history.replaceState({}, document.title, window.location.pathname);

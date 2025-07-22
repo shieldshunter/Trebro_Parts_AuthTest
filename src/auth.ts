@@ -28,9 +28,9 @@ function getCookie(name: string): string | null {
     const urlParams = new URLSearchParams(window.location.search);
     const authParam = urlParams.get('auth');
     if (authParam) {
-      // (A) Set the cookie for 24 hours (86400 seconds)
+      // (A) Set the cookie to never expire (far future Expires date)
       // We cannot set HttpOnly from JS. Include SameSite=None; Secure if HTTPS/cross-domain is needed.
-      document.cookie = `auth=${encodeURIComponent(authParam)}; Path=/; Max-Age=864000; SameSite=None; Secure;`;
+      document.cookie = `auth=${encodeURIComponent(authParam)}; Path=/; Expires=Fri, 31 Dec 2099 23:59:59 GMT; SameSite=None; Secure;`;
 
       // (B) Remove the ?auth= from the URL so it doesn't linger
       urlParams.delete('auth');

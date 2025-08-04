@@ -151,52 +151,60 @@ class LoginDialog extends HTMLElement {
       }
     };
     */
-   // Capture the button’s original HTML structure so we can reset it later.
+// Save the original inner HTML and click handler so we can restore them later.
 const initialBtnHTML = sendLinkBtn.innerHTML;
 
-    sendLinkBtn.onclick = async () => {
-      const email = uname.value.trim().toLowerCase();
+const originalClickHandler = async () => {
+  const email = uname.value.trim().toLowerCase();
+  
+  // Optionally validate the email here before continuing
+  await auth.setUserData({ email });
+
+  // Enter the loading state: disable button and add the loading class.
+  sendLinkBtn.disabled = true;
+  sendLinkBtn.classList.add("loading");
+
+  try {
+    await fetch("https://trebrosinglesignon.azurewebsites.net/api/send_magic_link_function", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    
+    // Assume success even if the fetch returns a 500 for testing purposes.
+    sendLinkBtn.classList.remove("loading");
+    sendLinkBtn.classList.add("success");
+    sendLinkBtn.textContent = "Success! Check your email";
+    
+    //alert("Magic link sent! Check your email.");
+    
+    // After a delay (e.g. 6 seconds), override the click handler to reset the state.
+    setTimeout(() => {
+      sendLinkBtn.disabled = false;
+      sendLinkBtn.textContent = "Click to try again";
       
-      // Optionally, validate email here if needed
-      await auth.setUserData({ email });
-
-      // Enter loading state:
-      sendLinkBtn.disabled = true;
-      sendLinkBtn.classList.add("loading");
-
-      try {
-        await fetch("https://trebrosinglesignon.azurewebsites.net/api/send_magic_link_function", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email })
-        });
-        
-        // DISABLED LOGIC for testing purposes, for some reason the fetch request is working but always still returns a 500 error
-        // Im thinbking it has to do with the cosmos db connection problem that I keep having
-        // On successful response, show success state:
-        sendLinkBtn.classList.remove("loading");
-        sendLinkBtn.classList.add("success");
-        sendLinkBtn.textContent = "Success! Check your email";
-
-        // Optionally, you could alert the user or close the dialog here.
-
-        // Reset the button back to its idle state after a delay:
-        setTimeout(() => {
-          sendLinkBtn.disabled = false;
-          sendLinkBtn.classList.remove("success");
-          sendLinkBtn.innerHTML = initialBtnHTML;
-        }, 6000);
-        
-        // Optionally, close the dialog (if desired):
-        // this.close();
-      } catch (err) {
-        console.error(`Error: ${err}`);
-        // On error, revert to idle state:
-        sendLinkBtn.disabled = false;
-        sendLinkBtn.classList.remove("loading");
+      // Override the click handler with a reset function.
+      sendLinkBtn.onclick = () => {
+        // Reset the button to its idle state.
+        sendLinkBtn.classList.remove("success");
         sendLinkBtn.innerHTML = initialBtnHTML;
-      }
-    };
+        // Reattach the original click handler.
+        sendLinkBtn.onclick = originalClickHandler;
+      };
+    }, 10000); // Change to 10000 for a 10-second delay if desired.
+    
+  } catch (err) {
+    console.error(`Error: ${err}`);
+    // On error, revert immediately to the idle state.
+    sendLinkBtn.disabled = false;
+    sendLinkBtn.classList.remove("loading");
+    sendLinkBtn.innerHTML = initialBtnHTML;
+  }
+};
+
+// Initially attach the original click handler.
+sendLinkBtn.onclick = originalClickHandler;
+
 
     
     
